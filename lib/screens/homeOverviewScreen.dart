@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/folderInfo.dart';
+import 'package:multi_select_item/multi_select_item.dart';
 
 class HomeOverviewScreen extends StatefulWidget {
   @override
@@ -7,11 +8,6 @@ class HomeOverviewScreen extends StatefulWidget {
 }
 
 class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
-  bool gotDeleteClicked = false;
-  int count = 0;
-  Color _backGroundColor;
-  int currentId;
-  // bool gotClicked = false;
   final List<FolderInfo> loadedFolders = [
     FolderInfo(
         id: 'q',
@@ -80,60 +76,65 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
         isIndependentFile: true,
         fileSize: '746.27 KB'),
   ];
+  MultiSelectController controller = new MultiSelectController();
+
+  @override
+  void initState() {
+    super.initState();
+    controller.disableEditingWhenNoneSelected = true;
+    controller.set(loadedFolders.length);
+  }
+
+  void delete() {
+    var list = controller.selectedIndexes;
+    list.sort((b, a) =>
+        a.compareTo(b)); //reoder from biggest number, so it wont error
+    list.forEach((element) {
+      loadedFolders.removeAt(element);
+    });
+
+    setState(() {
+      controller.set(loadedFolders.length);
+    });
+  }
+
+  void selectAll() {
+    setState(() {
+      controller.toggleAll();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          // mainAxisSize: MainAxisSize.min,
-          children: [
-            if (gotDeleteClicked)
-              Container(
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.grey[200])),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 10.0,
-                      ),
-                      GestureDetector(
-                        child: Icon(Icons.cancel),
-                        onTap: () {
-                          setState(() {
-                            gotDeleteClicked = false;
-                            _backGroundColor = null;
-                            count = 0;
-                          });
-                        },
-                      ),
-                      SizedBox(
-                        width: 20.0,
-                      ),
-                      Text('$count'),
-                      SizedBox(
-                        width: 10.0,
-                      ),
-                      Text('Selected'),
-                      Spacer(),
-                      Icon(Icons.star),
-                      SizedBox(
-                        width: 10.0,
-                      ),
-                      Icon(Icons.delete),
-                      SizedBox(
-                        width: 10.0,
-                      ),
-                    ],
+    return WillPopScope(
+      onWillPop: () async {
+        var before = !controller.isSelecting;
+        setState(() {
+          controller.deselectAll();
+        });
+        return before;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.red[400],
+          title: new Text('Selected ${controller.selectedIndexes.length}  '),
+          actions: (controller.isSelecting)
+              ? <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.select_all),
+                    onPressed: selectAll,
                   ),
-                ),
-              ),
-            if (!gotDeleteClicked)
-              // if (gotClicked)
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: delete,
+                  )
+                ]
+              : <Widget>[],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
               Container(
-                // color: Color(0xfff5f4f4),
                 decoration:
                     BoxDecoration(border: Border.all(color: Colors.grey[200])),
                 child: Padding(
@@ -167,162 +168,158 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                   ),
                 ),
               ),
-            SizedBox(
-              height: 10.0,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                      border: Border.all(color: Colors.grey[300])),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Quick Access',
-                          style: TextStyle(
-                            color: Color(0xff0f3057),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16.0,
-                          ),
-                        ),
-                        Icon(Icons.arrow_drop_down),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 5.0,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5.0),
-                      ),
-                      border: Border.all(color: Colors.grey[300])),
-                  child: Icon(
-                    Icons.format_list_bulleted_outlined,
-                    size: 28.0,
-                    color: Color(0xff0f3057),
-                  ),
-                ),
-                SizedBox(
-                  width: 15.0,
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.symmetric(vertical: 5.0),
-                itemCount: loadedFolders.length,
-                itemBuilder: (context, i) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3.0),
-                    child: GestureDetector(
-                      onLongPress: () {
-                        setState(() {
-                          currentId = i;
-                          _backGroundColor = Colors.lightBlueAccent;
-                          gotDeleteClicked = true;
-                          count++;
-                        });
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: currentId == i ? _backGroundColor : null,
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          border: Border.all(color: Colors.grey[400]),
-                        ),
-                        child: ListTile(
-                          leading: Container(
-                            height: 40,
-                            child: Image.asset(
-                              loadedFolders[i].folderImageUrl,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          title: Text(
-                            loadedFolders[i].folderName,
+              SizedBox(
+                height: 10.0,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        border: Border.all(color: Colors.grey[300])),
+                    child: Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Quick Access',
                             style: TextStyle(
                               color: Color(0xff0f3057),
                               fontWeight: FontWeight.w500,
+                              fontSize: 16.0,
                             ),
                           ),
-                          subtitle: Text(
-                            loadedFolders[i].isIndependentFile
-                                ? loadedFolders[i].fileSize.toString() +
-                                    '  ${DateTime.now()}'
-                                : loadedFolders[i].subFoldersCount.toString() +
-                                    'Folder . ${loadedFolders[i].fileCount.toString()} File',
-                          ),
-                          trailing: Icon(
-                            Icons.more_vert,
-                            color: Colors.black87,
+                          Icon(Icons.arrow_drop_down),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 5.0,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(5.0),
+                        ),
+                        border: Border.all(color: Colors.grey[300])),
+                    child: Icon(
+                      Icons.format_list_bulleted_outlined,
+                      size: 28.0,
+                      color: Color(0xff0f3057),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 15.0,
+                  ),
+                ],
+              ),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(vertical: 5.0),
+                  itemCount: loadedFolders.length,
+                  itemBuilder: (context, i) {
+                    return MultiSelectItem(
+                      isSelecting: controller.isSelecting,
+                      onSelected: () {
+                        setState(() {
+                          controller.toggle(i);
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3.0),
+                        child: Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: controller.isSelected(i)
+                              ? new BoxDecoration(color: Colors.grey[300])
+                              : new BoxDecoration(),
+                          child: ListTile(
+                            leading: Container(
+                              height: 40,
+                              child: Image.asset(
+                                loadedFolders[i].folderImageUrl,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            title: Text(
+                              loadedFolders[i].folderName,
+                              style: TextStyle(
+                                color: Color(0xff0f3057),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              loadedFolders[i].isIndependentFile
+                                  ? loadedFolders[i].fileSize.toString() +
+                                      '  ${DateTime.now()}'
+                                  : loadedFolders[i]
+                                          .subFoldersCount
+                                          .toString() +
+                                      ' Folder . ${loadedFolders[i].fileCount.toString()} File',
+                            ),
+                            trailing: Icon(
+                              Icons.more_vert,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Color(0xff0f3057),
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        color: Color(0xff0f3057),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Container(
-            // color: Color(0xff0f3057),
-            child: Row(
-              // mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(
-                  Icons.menu,
-                  size: 28.0,
-                  color: Colors.white,
-                ),
-                Spacer(),
-                Icon(
-                  Icons.notification_important_outlined,
-                  size: 28.0,
-                  color: Colors.white,
-                ),
-                SizedBox(
-                  width: 13.0,
-                ),
-                Icon(
-                  Icons.star_border_outlined,
-                  size: 28.0,
-                  color: Colors.white,
-                ),
-                SizedBox(
-                  width: 13.0,
-                ),
-                Icon(
-                  Icons.person,
-                  size: 28.0,
-                  color: Colors.white,
-                )
-              ],
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {},
+          backgroundColor: Color(0xff0f3057),
+          child: Icon(Icons.add),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+          shape: CircularNotchedRectangle(),
+          color: Color(0xff0f3057),
+          child: Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Container(
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.menu,
+                    size: 28.0,
+                    color: Colors.white,
+                  ),
+                  Spacer(),
+                  Icon(
+                    Icons.notification_important_outlined,
+                    size: 28.0,
+                    color: Colors.white,
+                  ),
+                  SizedBox(
+                    width: 13.0,
+                  ),
+                  Icon(
+                    Icons.star_border_outlined,
+                    size: 28.0,
+                    color: Colors.white,
+                  ),
+                  SizedBox(
+                    width: 13.0,
+                  ),
+                  Icon(
+                    Icons.person,
+                    size: 28.0,
+                    color: Colors.white,
+                  )
+                ],
+              ),
             ),
           ),
         ),
-        // ),
       ),
     );
   }
