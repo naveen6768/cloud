@@ -233,14 +233,20 @@ class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
                         });
                       },
                       child: Container(
-                        // padding: EdgeInsets.all(.0),
+                        padding: EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           color: currentId == i ? _backGroundColor : null,
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                           border: Border.all(color: Colors.grey[400]),
                         ),
                         child: ListTile(
-                          leading: Image.asset(loadedFolders[i].folderImageUrl),
+                          leading: Container(
+                            height: 40,
+                            child: Image.asset(
+                              loadedFolders[i].folderImageUrl,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                           title: Text(
                             loadedFolders[i].folderName,
                             style: TextStyle(
