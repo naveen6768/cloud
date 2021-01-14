@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/folderInfo.dart';
 
-class HomeOverviewScreen extends StatelessWidget {
+class HomeOverviewScreen extends StatefulWidget {
+  @override
+  _HomeOverviewScreenState createState() => _HomeOverviewScreenState();
+}
+
+class _HomeOverviewScreenState extends State<HomeOverviewScreen> {
+  bool gotDeleteClicked = false;
+  int count = 0;
+  Color _backGroundColor;
+  int currentId;
+  // bool gotClicked = false;
   final List<FolderInfo> loadedFolders = [
     FolderInfo(
         id: 'q',
@@ -70,6 +80,7 @@ class HomeOverviewScreen extends StatelessWidget {
         isIndependentFile: true,
         fileSize: '746.27 KB'),
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,41 +88,85 @@ class HomeOverviewScreen extends StatelessWidget {
         child: Column(
           // mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              // color: Color(0xfff5f4f4),
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.grey[200])),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Text(
-                      'Welcome, Haresh Vaghela',
-                      style: TextStyle(
-                        fontSize: 19.0,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
+            if (gotDeleteClicked)
+              Container(
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.grey[200])),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 10.0,
                       ),
-                    ),
-                    Spacer(),
-                    Icon(
-                      Icons.search,
-                      size: 35.0,
-                      color: Color(0xff111d5e),
-                    ),
-                    SizedBox(
-                      width: 20.0,
-                    ),
-                    CircleAvatar(
-                      backgroundImage: AssetImage('images/woman.png'),
-                    ),
-                    SizedBox(
-                      width: 8.0,
-                    ),
-                  ],
+                      GestureDetector(
+                        child: Icon(Icons.cancel),
+                        onTap: () {
+                          setState(() {
+                            gotDeleteClicked = false;
+                            _backGroundColor = null;
+                            count = 0;
+                          });
+                        },
+                      ),
+                      SizedBox(
+                        width: 20.0,
+                      ),
+                      Text('$count'),
+                      SizedBox(
+                        width: 10.0,
+                      ),
+                      Text('Selected'),
+                      Spacer(),
+                      Icon(Icons.star),
+                      SizedBox(
+                        width: 10.0,
+                      ),
+                      Icon(Icons.delete),
+                      SizedBox(
+                        width: 10.0,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            if (!gotDeleteClicked)
+              // if (gotClicked)
+              Container(
+                // color: Color(0xfff5f4f4),
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.grey[200])),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Welcome, Haresh Vaghela',
+                        style: TextStyle(
+                          fontSize: 19.0,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Spacer(),
+                      Icon(
+                        Icons.search,
+                        size: 35.0,
+                        color: Color(0xff111d5e),
+                      ),
+                      SizedBox(
+                        width: 20.0,
+                      ),
+                      CircleAvatar(
+                        backgroundImage: AssetImage('images/woman.png'),
+                      ),
+                      SizedBox(
+                        width: 8.0,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             SizedBox(
               height: 10.0,
             ),
@@ -168,31 +223,42 @@ class HomeOverviewScreen extends StatelessWidget {
                 itemBuilder: (context, i) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3.0),
-                    child: Container(
-                      // padding: EdgeInsets.all(.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                        border: Border.all(color: Colors.grey[400]),
-                      ),
-                      child: ListTile(
-                        leading: Image.asset(loadedFolders[i].folderImageUrl),
-                        title: Text(
-                          loadedFolders[i].folderName,
-                          style: TextStyle(
-                            color: Color(0xff0f3057),
-                            fontWeight: FontWeight.w500,
+                    child: GestureDetector(
+                      onLongPress: () {
+                        setState(() {
+                          currentId = i;
+                          _backGroundColor = Colors.lightBlueAccent;
+                          gotDeleteClicked = true;
+                          count++;
+                        });
+                      },
+                      child: Container(
+                        // padding: EdgeInsets.all(.0),
+                        decoration: BoxDecoration(
+                          color: currentId == i ? _backGroundColor : null,
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          border: Border.all(color: Colors.grey[400]),
+                        ),
+                        child: ListTile(
+                          leading: Image.asset(loadedFolders[i].folderImageUrl),
+                          title: Text(
+                            loadedFolders[i].folderName,
+                            style: TextStyle(
+                              color: Color(0xff0f3057),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        subtitle: Text(
-                          loadedFolders[i].isIndependentFile
-                              ? loadedFolders[i].fileSize.toString() +
-                                  '  ${DateTime.now()}'
-                              : loadedFolders[i].subFoldersCount.toString() +
-                                  'Folder . ${loadedFolders[i].fileCount.toString()} File',
-                        ),
-                        trailing: Icon(
-                          Icons.more_vert,
-                          color: Colors.black87,
+                          subtitle: Text(
+                            loadedFolders[i].isIndependentFile
+                                ? loadedFolders[i].fileSize.toString() +
+                                    '  ${DateTime.now()}'
+                                : loadedFolders[i].subFoldersCount.toString() +
+                                    'Folder . ${loadedFolders[i].fileCount.toString()} File',
+                          ),
+                          trailing: Icon(
+                            Icons.more_vert,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ),
