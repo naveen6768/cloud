@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/homeOverviewScreen.dart';
+import './screens/createFolder.dart';
+import './screens/subFolderScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +17,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: HomeOverviewScreen(),
+      initialRoute: CreateFolder.id,
+      routes: {
+        SubfolderCreation.id: (context) => SubfolderCreation(),
+        CreateFolder.id: (context) => CreateFolder(),
+      },
     );
   }
 }
